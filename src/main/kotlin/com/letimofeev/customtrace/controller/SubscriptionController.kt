@@ -2,6 +2,7 @@ package com.letimofeev.customtrace.controller
 
 import com.letimofeev.customtrace.config.TracingConfig.Companion.TRACE_KEY
 import com.letimofeev.customtrace.domain.Subscription
+import kotlinx.coroutines.reactor.awaitSingle
 import mu.KLogging
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -25,22 +26,21 @@ class SubscriptionController(webclientBuilder: WebClient.Builder) {
     }
 
     @GetMapping("/subscription2")
-    fun subscription2(): Mono<Subscription> {
+    suspend fun subscription2(): Subscription {
         logger.info { "subscription2 request" }
 
         return webClient.get()
             .uri("/subscription3")
             .retrieve()
             .bodyToMono(Subscription::class.java)
+            .awaitSingle()
     }
 
     @GetMapping("/subscription3")
-    fun subscription3(@RequestHeader headers: Map<String, String>): Mono<Subscription> {
+    suspend fun subscription3(@RequestHeader headers: Map<String, String>): Subscription {
         logger.info { "subscription3 request, headers: $headers" }
 
-        return Mono.just(
-            Subscription(description = "govno")
-        )
+        return Subscription(description = "govno")
     }
 
     companion object : KLogging()
